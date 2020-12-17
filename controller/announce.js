@@ -136,7 +136,7 @@ module.exports.getAnnounceAppointments = async(req, res) => {
 module.exports.update = async(req, res) => {
     const { id, title, description, date, duration, price, categoryName, entityId, statusId } = req.body;
     const newData = {};
-    const dateTransformed = null;
+    let dateTransformed = null;
     if(date !== undefined){
         dateTransformed = await DateFormat.transform(date);
         if(!DateFormat.laterDate(dateTransformed)) { 

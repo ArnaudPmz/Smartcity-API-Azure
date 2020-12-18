@@ -61,11 +61,16 @@ module.exports.get = async(req, res) => {
  */
 module.exports.create = async(req, res) => {
     const {userId, street, city, zipCode} = req.body;
+    console.log(req.body);
     let address = null;
     if(userId === undefined || street === undefined || city === undefined || zipCode === undefined){
         res.sendStatus(400);
     } else {
-        try{ 
+        try{
+            const entityFound = await Entity.findOne({ where: {id : userId }}); 
+            if(entityFound && entityFound.addressId !== null){
+                throw new Error("User already have an address");
+            }
             await sequelize.transaction( {
                 deferrable: Sequelize.Deferrable.SET_DEFERRED
             }, async (t) => {
@@ -78,12 +83,14 @@ module.exports.create = async(req, res) => {
                 });
                 //.null contain id of potential address ?
                 if(address){
+                    console.log(address.null);
                     const userFound = await Entity.update({
                         addressId: address.null
                     }, {
                         where: {
                             id: userId
-                        }
+                        }, 
+                        transaction: t
                     });
                     console.log(userFound);
                     if(userFound[0] === 0){
@@ -96,7 +103,9 @@ module.exports.create = async(req, res) => {
         } catch (e) {
             //Transaction has already been rolled back automatically by Sequelize
             if(e.message === "User id not valid"){
-                res.status(404).json({error: e.message});
+                res.status(404).json({ error: e.message });
+            } else if(e.message === "User already have an address") {
+                res.status(409).json({ error: e.message });
             } else {
                 console.log(e);
                 res.sendStatus(500);

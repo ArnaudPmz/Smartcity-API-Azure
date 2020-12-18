@@ -102,6 +102,8 @@ router.patch('/', AuthMiddleware.identification, routesVersioning({
  *              description: Adresse inexistante
  *          401:
  *              $ref: '#/components/responses/MissingJWT'
+ *          409: 
+ *               description: L'utilisateur a déjà une adresse, éditez-la
  *          500:
  *              description: Erreur serveur
  *
